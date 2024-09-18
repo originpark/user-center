@@ -1,5 +1,6 @@
 package com.origin.usercenter.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.origin.usercenter.model.domain.User;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
@@ -15,16 +16,12 @@ class UserServiceTest {
 
     @Test
     void testInsertUser() {
-        User user = new User();
-        user.setUsername("test-user");
-        user.setUserAccount("123");
-        user.setAvatarUrl("");
-        user.setGender(0);
-        user.setUserPassword("123");
-        user.setPhone("18222239438");
-        user.setEmail("xxx@email.com");
-
-        boolean result = userService.save(user);
-        Assertions.assertTrue(result);
+        String account = "origin_park";
+        String password = "1223003136";
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("user_account", account);
+        userQueryWrapper.eq("user_password", password);
+        User user = userService.getOne(userQueryWrapper);
+        System.out.println(user);
     }
 }

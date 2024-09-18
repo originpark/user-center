@@ -1,9 +1,6 @@
 package com.origin.usercenter.model.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -64,6 +61,11 @@ public class User implements Serializable {
     private Integer userStatus;
 
     /**
+     * 用户级别 0-普通用户;1-管理员
+     */
+    private Integer userRole;
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -73,9 +75,12 @@ public class User implements Serializable {
      */
     private Date updateTime;
 
+
+
     /**
      * 逻辑删除
      */
+    @TableLogic
     private Integer isDeleted;
 
     @TableField(exist = false)
