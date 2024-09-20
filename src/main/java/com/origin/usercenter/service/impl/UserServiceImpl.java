@@ -1,6 +1,6 @@
 package com.origin.usercenter.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.Query;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.origin.usercenter.model.domain.User;
@@ -152,6 +152,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setCreateTime(user.getCreateTime());
         safetyUser.setUserRole(user.getUserRole());
         return safetyUser;
+    }
+
+    @Override
+    public int userLogout(HttpServletRequest httpServletRequest) {
+        httpServletRequest.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 1;
     }
 }
 
