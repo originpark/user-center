@@ -3,6 +3,7 @@ package com.origin.usercenter.service;
 import com.origin.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
 * @description 针对表【user(用户)】的数据库操作Service
 * @createDate 2024-09-18 00:08:21
 */
+
 public interface UserService extends IService<User> {
 
 
@@ -55,4 +57,10 @@ public interface UserService extends IService<User> {
      * @param httpServletRequest request对象
      */
     int userLogout(HttpServletRequest httpServletRequest);
+
+    /**
+     * 获取所有用户
+     * @return 所有用户列表
+     */
+    List<User> getAllUser();
 }

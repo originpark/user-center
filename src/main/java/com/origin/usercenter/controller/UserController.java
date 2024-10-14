@@ -5,6 +5,7 @@ import com.origin.usercenter.common.ResponseType;
 import com.origin.usercenter.common.ResponseUtils;
 import com.origin.usercenter.exception.BusinessException;
 import com.origin.usercenter.model.domain.User;
+import com.origin.usercenter.model.request.UserDeleteRequest;
 import com.origin.usercenter.model.request.UserLoginRequest;
 import com.origin.usercenter.model.request.UserRegisterRequest;
 import com.origin.usercenter.service.UserService;
@@ -23,7 +24,8 @@ import static com.origin.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin
+@CrossOrigin("http://localhost:5173")
+
 public class UserController {
 
     @Resource
@@ -50,7 +52,7 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest) {
         if (userLoginRequest == null) {
-            throw new BusinessException(ResponseType.NULL_ERROR, "登录账号/密码/二次密码存为空");
+            throw new BusinessException(ResponseType.NULL_ERROR, "请求体为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
@@ -78,7 +80,7 @@ public class UserController {
 
         // 仅管理员
         if (!is_admin(httpServletRequest)) {
-            throw new BusinessException(ResponseType.NO_AUTH, "无权查看用户列表");
+            throw new BusinessException(ResponseType.NO_AUTH, "无权搜索用户列表");
         }
 
 
@@ -89,17 +91,46 @@ public class UserController {
 
     }
 
+    @GetMapping("/list")
+    public BaseResponse<List<User>> listUser(HttpServletRequest httpServletRequest) {
+
+        // 仅管理员
+        if (!is_admin(httpServletRequest)) {
+            throw new BusinessException(ResponseType.NO_AUTH, "无权查看用户列表");
+        }
+
+        List<User> list = userService.list();
+        List<User> safetyUserList = list.stream().map(user -> userService.getSafetyUser(user)).toList();
+        return ResponseUtils.success(safetyUserList);
+    }
+
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest httpServletRequest) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest) {
 
         // 仅管理员
         if (!is_admin(httpServletRequest)) {
             throw new BusinessException(ResponseType.NO_AUTH, "无权删除用户");
         }
 
+        if (userDeleteRequest == null) {
+            throw new BusinessException(ResponseType.NULL_ERROR, "请求体为空");
+        }
+
+        Long id = userDeleteRequest.getId();
+
+        if (id == null) {
+            throw new BusinessException(ResponseType.PARAM_ERROR, "id为空");
+        }
+
         if (id <= 0) {
             throw new BusinessException(ResponseType.PARAM_ERROR, "要删除的id < 0");
         }
+
+        User user = userService.getById(id);
+        if (user.getUserRole() == ADMIN_ROLE) {
+            throw new BusinessException(ResponseType.PARAM_ERROR, "不能删除管理员");
+        }
+
         boolean result = userService.removeById(id);
         if (result) {
             return ResponseUtils.success(true);
@@ -113,7 +144,7 @@ public class UserController {
         Object userObj = httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            throw new BusinessException(ResponseType.NULL_ERROR, "当前用户不存在");
+            throw new BusinessException(ResponseType.NOT_LOGIN, "用户登录态不存在");
         }
         Long userId = currentUser.getId();
         User user = userService.getById(userId);

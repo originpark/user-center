@@ -3,6 +3,8 @@ package com.origin.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.origin.usercenter.common.ResponseType;
+import com.origin.usercenter.exception.BusinessException;
 import com.origin.usercenter.model.domain.User;
 import com.origin.usercenter.service.UserService;
 import com.origin.usercenter.mapper.UserMapper;
@@ -87,22 +89,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public User userLogin(String userAccount, String userPassword, HttpServletRequest httpServletRequest) {
         // 校验非空
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ResponseType.NULL_ERROR, "账号或密码为空!");
         }
         // 账户长度不小于4
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ResponseType.PARAM_ERROR, "账户长度不能小于4");
         }
 
         // 密码长度不小于8
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ResponseType.PARAM_ERROR, "密码长度不能小于8");
         }
 
         // 账户不包含特殊字符
         if (!RegexUtils.matchA1_(userAccount)) {
-            return null;
+            throw new BusinessException(ResponseType.PARAM_ERROR, "账户不能包含特殊字符");
         }
+
 
         // 密码加密
         String md5Password = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -114,7 +117,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = this.getOne(userQueryWrapper);
         if (user == null) {
             this.log.warn("user login failed, userAccount cannot match userPassword!");
-            return null;
+            throw new BusinessException(ResponseType.NULL_ERROR, "密码错误, 或不存在该账号!");
         }
 
         // 用户脱敏
@@ -158,6 +161,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public int userLogout(HttpServletRequest httpServletRequest) {
         httpServletRequest.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return this.list();
     }
 }
 
